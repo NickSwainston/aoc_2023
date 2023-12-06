@@ -45,27 +45,66 @@ print(f"Part 1 {min(locations)}")
 
 locations = []
 for i in range(len(seeds)//2):
-    edges = [seeds[i], seeds[i] + seeds[i+1] - 1]
+    edges = [(seeds[i], seeds[i] + seeds[i+1] - 1)]
     print(f"Seed range: {edges}")
     for current_map in all_maps:
         this_maps_edges = []
-        for edge in edges:
-            this_maps_edges.append(edge)
-        for start, end, change in current_map:
-            this_maps_edges.append(start)
-            this_maps_edges.append(end)
-        print(f"Map edges: {this_maps_edges}")
-        new_edge_values = []
-        for edge in this_maps_edges:
+        for input_start, input_end in edges:
+            print(f"    Input range: {input_start} - {input_end}")
+            if (input_start, input_end) not in this_maps_edges:
+                this_maps_edges.append((input_start, input_end))
             for start, end, change in current_map:
-                if start <= edge <= end:
-                    edge += change
+                print(f"        Map range: {start} - {end}")
+                if start < input_start and input_end < end:
+                    print("        Inside")
+                    pass
+                elif input_start < start and end < input_end:
+                    print("        Outside")
+                    try:
+                        this_maps_edges.remove((input_start, input_end))
+                    except ValueError:
+                        pass
+                    this_maps_edges.append((input_start, start -1))
+                    this_maps_edges.append((start, end -1))
+                    this_maps_edges.append((end, input_end -1))
+
+                elif input_start < start < input_end:
+                    print("        Start inside")
+                    try:
+                        this_maps_edges.remove((input_start, input_end))
+                    except ValueError:
+                        pass
+                    this_maps_edges.append((input_start, start -1))
+                    this_maps_edges.append((start, input_end))
+                elif input_start < end < input_end:
+                    print("        End inside")
+                    try:
+                        this_maps_edges.remove((input_start, input_end))
+                    except ValueError:
+                        pass
+                    this_maps_edges.append((input_start, end -1))
+                    this_maps_edges.append((end, input_end))
+                else:
+                    print("        No overlap")
+                    pass
+                print(f"        this_maps_edges: {this_maps_edges}")
+
+        new_edge_values = []
+        for edge_start, edge_stop in this_maps_edges:
+            for start, end, change in current_map:
+                if start <= edge_start <= end:
+                    edge_start += change
                     break
-            if edge not in new_edge_values:
-                new_edge_values.append(edge)
+            for start, end, change in current_map:
+                if start <= edge_stop <= end:
+                    edge_stop += change
+                    break
+            new_edge_values.append((edge_start, edge_stop))
         edges = new_edge_values
         print(f"New edges: {edges}")
     print(f"Final edges: {edges}")
-    locations = locations + edges
+    for start, end in edges:
+        locations.append(start)
+        locations.append(end)
 
 print(f"Part 2 {min(locations)}")
